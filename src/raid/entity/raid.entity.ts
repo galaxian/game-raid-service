@@ -1,8 +1,10 @@
+import { User } from 'src/user/entity/user.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -23,6 +25,9 @@ export class RaidRecord {
 
   @UpdateDateColumn()
   endTime: Date;
+
+  @ManyToOne(() => User, (user) => user.raidRecord, { eager: false })
+  user: User;
 
   @DeleteDateColumn()
   deleteAt: Date;
