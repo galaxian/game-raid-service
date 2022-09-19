@@ -14,7 +14,7 @@ export class RaidRecord {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ default: 0 })
   score: number;
 
   @Column()
