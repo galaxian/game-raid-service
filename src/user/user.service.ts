@@ -16,6 +16,32 @@ export class UserService {
     return { userId: saveUser.id };
   }
 
+  async getUser(id: number) {
+    const findUser: User = await this.userRepository.findOne({
+      where: { id },
+      relations: ['raidRecord'],
+    });
+
+    let totalScore = 0;
+
+    const response = [];
+
+    for (const record of findUser.raidRecord) {
+      totalScore += record.score;
+      response.push({
+        raidRecordId: record.id,
+        score: record.score,
+        enterTime: record.enterTime,
+        endTime: record.endTime,
+      });
+    }
+
+    return {
+      totalScore,
+      bossRaidHistory: response,
+    };
+  }
+
   async findUserByfield(
     options: FindOneOptions<User>,
   ): Promise<User | undefined> {
