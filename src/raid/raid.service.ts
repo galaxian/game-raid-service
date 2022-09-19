@@ -118,6 +118,19 @@ export class RaidService {
 
     raidRecord.endTime = new Date();
 
+    const duration: number = (await this.getBossInfo()).bossRaids[0]
+      .bossRaidLimitSeconds;
+    const score: number = (await this.getBossInfo()).bossRaids[0].levels[
+      raidRecord.level - 1
+    ];
+
+    if (
+      raidRecord.endTime.getTime() - raidRecord.enterTime.getTime() <
+      duration * 1000
+    ) {
+      raidRecord.score = score;
+    }
+
     await this.raidRepository.save(raidRecord);
   }
 
