@@ -1,5 +1,11 @@
+import { RaidRecord } from 'src/raid/entity/raid.entity';
 import { DefaultEntity } from 'src/utils/entity/default.entity';
-import { Entity } from 'typeorm';
+import { Entity, OneToMany } from 'typeorm';
 
 @Entity()
-export class User extends DefaultEntity {}
+export class User extends DefaultEntity {
+  @OneToMany(() => RaidRecord, (raidRecord) => raidRecord.user, {
+    eager: false,
+  })
+  raidRecord: RaidRecord[];
+}
