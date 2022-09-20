@@ -168,7 +168,24 @@ export class RaidService {
         return result;
       }),
     );
-    return results;
+
+    let myRank = 0;
+    let myTotalScore = 0;
+    for (const rank of results) {
+      if (userId === rank.userId) {
+        myRank = rank.ranking;
+        myTotalScore = rank.totalScore;
+        break;
+      }
+    }
+    return {
+      toprankerInfoList: results,
+      myRankingInfo: {
+        ranking: myRank,
+        userId: userId,
+        totalScore: myTotalScore,
+      },
+    };
   }
 
   async getBossInfo() {
