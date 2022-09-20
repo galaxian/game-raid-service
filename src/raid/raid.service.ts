@@ -1,6 +1,8 @@
 import {
   BadRequestException,
+  CACHE_MANAGER,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -15,6 +17,9 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom, map } from 'rxjs';
 import { EndRaidDto } from './dto/end.dto';
 import { User } from 'src/user/entity/user.entity';
+import { Cache } from 'cache-manager';
+import { InjectRedis } from '@nestjs-modules/ioredis';
+import Redis from 'ioredis';
 
 const bossUrl = config.get('boss_url');
 
@@ -25,6 +30,8 @@ export class RaidService {
     private readonly raidRepository: Repository<RaidRecord>,
     private readonly userService: UserService,
     private readonly httpService: HttpService,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    @InjectRedis() private readonly redis: Redis,
   ) {}
 
   async getRaidStatus() {
