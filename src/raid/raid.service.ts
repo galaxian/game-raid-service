@@ -139,6 +139,8 @@ export class RaidService {
     }
 
     await this.raidRepository.save(raidRecord);
+
+    await this.redis.zincrby('raidRank', parseInt(score['score']), userId);
   }
 
   async getBossInfo() {
