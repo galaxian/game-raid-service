@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   CACHE_MANAGER,
   ForbiddenException,
   Inject,
@@ -10,7 +9,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RaidRecord } from './entity/raid.entity';
 import * as config from 'config';
-import axios from 'axios';
 import { EnterRaidDto } from './dto/enter.dto';
 import { UserService } from 'src/user/user.service';
 import { HttpService } from '@nestjs/axios';
@@ -22,7 +20,6 @@ import { InjectRedis } from '@nestjs-modules/ioredis';
 import Redis from 'ioredis';
 import { RankDto } from './dto/rank.dto';
 import { EnterResponseDto } from './dto/enterRes.dto';
-import { ResponseDto } from 'src/utils/dto/response.dto';
 import { RaidRankResponseDto } from './dto/raidRankRes.dto';
 import { RaidStatusEnterResponseDto } from './dto/raidStatusRes.enter.dto';
 

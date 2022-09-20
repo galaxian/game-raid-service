@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RaidStatusResponseDto } from 'src/raid/dto/raidStatusRes.dto';
-import { ResponseDto } from 'src/utils/dto/response.dto';
 import { FindOneOptions, Repository } from 'typeorm';
 import { UserResponseDto } from './dto/userResponse.dto';
 import { User } from './entity/user.entity';
