@@ -37,28 +37,30 @@ export class RaidService {
   ) {}
 
   async getRaidStatus(): Promise<RaidStatusEnterResponseDto> {
-    const getRecord: RaidRecord[] = await this.raidRepository.find({
-      relations: ['user'],
-      order: { endTime: 'DESC' },
-    });
+    const getRecord: RaidRecord = await this.raidRepository
+      .createQueryBuilder('raidrecord')
+      .innerJoinAndSelect('raidrecord.user', 'user')
+      .orderBy('enterTime', 'DESC')
+      .getOne();
 
-    if (getRecord.length === 0) {
+    if (!getRecord) {
       const result: RaidStatusEnterResponseDto = {
         canEnter: true,
       };
       return result;
     }
 
-    const enterTime: number = getRecord[0].enterTime.getTime();
+    const enterTime: number = getRecord.enterTime.getTime();
     const now = new Date().getTime();
 
     const duration: number = (await this.getBossInfo()).bossRaids[0]
       .bossRaidLimitSeconds;
+    const raidTime = now - enterTime;
 
-    if (now - enterTime < duration * 1000) {
+    if (raidTime < duration * 1000) {
       const result: RaidStatusEnterResponseDto = {
         canEnter: false,
-        enteredUserId: getRecord[0].user.id,
+        enteredUserId: getRecord.user.id,
       };
       return result;
     }
