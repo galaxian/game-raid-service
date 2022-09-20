@@ -5,5 +5,5 @@ export class ResponseDto {
   @IsNumber()
   status: number;
 
-  data: any;
+  data?: Promise<any>;
 }

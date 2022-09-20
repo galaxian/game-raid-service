@@ -7,12 +7,22 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  createUser(): Promise<ResponseDto> {
-    return this.userService.createUser();
+  createUser(): ResponseDto {
+    const data = this.userService.createUser();
+    const response: ResponseDto = {
+      status: 201,
+      data,
+    };
+    return response;
   }
 
   @Get('/:id')
-  getUser(@Param('id') id: number): Promise<ResponseDto> {
-    return this.userService.getUser(id);
+  getUser(@Param('id') id: number): ResponseDto {
+    const data = this.userService.getUser(id);
+    const response: ResponseDto = {
+      status: 200,
+      data,
+    };
+    return response;
   }
 }

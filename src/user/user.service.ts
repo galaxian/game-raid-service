@@ -12,20 +12,18 @@ export class UserService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
-  async createUser(): Promise<ResponseDto> {
+  async createUser(): Promise<{
+    userId: number;
+  }> {
     const createUser: User = this.userRepository.create();
     const saveUser: User = await this.userRepository.save(createUser);
 
-    const response: ResponseDto = {
-      status: 201,
-      data: {
-        userId: saveUser.id,
-      },
-    };
-    return response;
+    const data = { userId: saveUser.id };
+
+    return data;
   }
 
-  async getUser(id: number): Promise<ResponseDto> {
+  async getUser(id: number): Promise<UserResponseDto> {
     const findUser: User = await this.userRepository.findOne({
       where: { id },
       relations: ['raidRecord'],
@@ -50,9 +48,7 @@ export class UserService {
       bossRaidHistory,
     };
 
-    const response: ResponseDto = { status: 200, data };
-
-    return response;
+    return data;
   }
 
   async findUserByfield(

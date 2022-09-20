@@ -2,8 +2,8 @@ import { IsNotEmpty } from 'class-validator';
 
 export class EndRaidDto {
   @IsNotEmpty()
-  userId: number;
+  readonly userId: number;
 
   @IsNotEmpty()
-  raidRecordId: number;
+  readonly raidRecordId: number;
 }

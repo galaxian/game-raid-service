@@ -21,6 +21,10 @@ import { Cache } from 'cache-manager';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import Redis from 'ioredis';
 import { RankDto } from './dto/rank.dto';
+import { EnterResponseDto } from './dto/enterRes.dto';
+import { ResponseDto } from 'src/utils/dto/response.dto';
+import { RaidRankResponseDto } from './dto/raidRankRes.dto';
+import { RaidStatusEnterResponseDto } from './dto/raidStatusRes.enter.dto';
 
 const bossUrl = config.get('boss_url');
 
@@ -35,40 +39,44 @@ export class RaidService {
     @InjectRedis() private readonly redis: Redis,
   ) {}
 
-  async getRaidStatus() {
-    const getRecord = await this.raidRepository.find({
+  async getRaidStatus(): Promise<RaidStatusEnterResponseDto> {
+    const getRecord: RaidRecord[] = await this.raidRepository.find({
       relations: ['user'],
       order: { endTime: 'DESC' },
     });
 
     if (getRecord.length === 0) {
-      return { canEnter: true, enteredUserId: null };
+      const result: RaidStatusEnterResponseDto = {
+        canEnter: true,
+      };
+      return result;
     }
 
-    const enterTime = getRecord[0].enterTime.getTime();
+    const enterTime: number = getRecord[0].enterTime.getTime();
     const now = new Date().getTime();
 
     const duration: number = (await this.getBossInfo()).bossRaids[0]
       .bossRaidLimitSeconds;
-    console.log(duration);
 
     if (now - enterTime < duration * 1000) {
-      return {
+      const result: RaidStatusEnterResponseDto = {
         canEnter: false,
         enteredUserId: getRecord[0].user.id,
       };
+      return result;
     }
 
-    return {
+    const result: RaidStatusEnterResponseDto = {
       canEnter: true,
-      enteredUserId: null,
     };
+
+    return result;
   }
 
-  async enterBossRaid(enterRaidDto: EnterRaidDto) {
+  async enterBossRaid(enterRaidDto: EnterRaidDto): Promise<EnterResponseDto> {
     const { userId, level } = enterRaidDto;
 
-    const findUser = await this.userService.findUserByfield({
+    const findUser: User = await this.userService.findUserByfield({
       where: {
         id: userId,
       },
@@ -78,26 +86,26 @@ export class RaidService {
       throw new NotFoundException('존재하지 않는 사용자입니다.');
     }
 
-    const canEnter = (await this.getRaidStatus()).canEnter;
+    const canEnter: boolean = (await this.getRaidStatus()).canEnter;
 
     if (!canEnter) {
-      return {
-        isEnter: false,
-        raidRecordId: null,
-      };
+      const data: EnterResponseDto = { isEntered: false, raidRecordId: null };
+      return data;
     }
 
-    const record = this.raidRepository.create({
+    const record: RaidRecord = this.raidRepository.create({
       level,
       user: findUser,
     });
 
-    const saveRecord = await this.raidRepository.save(record);
+    const saveRecord: RaidRecord = await this.raidRepository.save(record);
 
-    return {
-      isEnter: true,
+    const data: EnterResponseDto = {
+      isEntered: true,
       raidRecordId: saveRecord.id,
     };
+
+    return data;
   }
 
   async endBossRaid(endRaidDto: EndRaidDto): Promise<void> {
@@ -124,27 +132,34 @@ export class RaidService {
       throw new ForbiddenException('본인의 레이드 정보가 아닙니다.');
     }
 
-    raidRecord.endTime = new Date();
+    const now: Date = new Date();
+    raidRecord.endTime = now;
 
-    const duration: number = (await this.getBossInfo()).bossRaids[0]
+    const bossRadiDuration: number = (await this.getBossInfo()).bossRaids[0]
       .bossRaidLimitSeconds;
-    const score: number = (await this.getBossInfo()).bossRaids[0].levels[
-      raidRecord.level - 1
-    ];
+    const bossRaidScore: number = (await this.getBossInfo()).bossRaids[0]
+      .levels[raidRecord.level - 1];
 
-    if (
-      raidRecord.endTime.getTime() - raidRecord.enterTime.getTime() <
-      duration * 1000
-    ) {
-      raidRecord.score = score;
+    const playerRaidTime: number =
+      raidRecord.endTime.getTime() - raidRecord.enterTime.getTime();
+
+    if (playerRaidTime < bossRadiDuration * 1000) {
+      raidRecord.score = bossRaidScore;
     }
 
     await this.raidRepository.save(raidRecord);
 
-    await this.redis.zincrby('raidRank', parseInt(score['score']), userId);
+    await this.redis.zincrby(
+      'raidRank',
+      parseInt(bossRaidScore['score']),
+      userId,
+    );
   }
 
-  async getRankList(rankDto: RankDto) {
+  async getRankList(rankDto: RankDto): Promise<{
+    topRankerInfoList: RaidRankResponseDto[];
+    myRankingInfo: RaidRankResponseDto;
+  }> {
     const { userId } = rankDto;
 
     const findUser: User = await this.userService.findUserByfield({
@@ -156,11 +171,11 @@ export class RaidService {
     }
 
     const rankList = await this.redis.zrevrange('raidRank', 0, -1);
-    const results = await Promise.all(
+    const results: RaidRankResponseDto[] = await Promise.all(
       rankList.map(async (element) => {
         const score = await this.redis.zscore('raidRank', element);
         const rank = await this.redis.zrevrank('raidRank', element);
-        const result = {
+        const result: RaidRankResponseDto = {
           ranking: rank + 1,
           userId: Number(element),
           totalScore: Number(score),
@@ -171,6 +186,7 @@ export class RaidService {
 
     let myRank = 0;
     let myTotalScore = 0;
+
     for (const rank of results) {
       if (userId === rank.userId) {
         myRank = rank.ranking;
@@ -178,23 +194,28 @@ export class RaidService {
         break;
       }
     }
-    return {
-      toprankerInfoList: results,
-      myRankingInfo: {
-        ranking: myRank,
-        userId: userId,
-        totalScore: myTotalScore,
-      },
+
+    const myRaidRankData: RaidRankResponseDto = {
+      ranking: myRank,
+      userId,
+      totalScore: myTotalScore,
     };
+
+    const data = {
+      topRankerInfoList: results,
+      myRankingInfo: myRaidRankData,
+    };
+
+    return data;
   }
 
   async getBossInfo() {
-    const url = bossUrl;
+    const url: string = bossUrl;
 
-    const responseData = await firstValueFrom(
+    const bossRaidData = await firstValueFrom(
       this.httpService.get(url).pipe(map((response) => response.data)),
     );
 
-    return responseData;
+    return bossRaidData;
   }
 }
