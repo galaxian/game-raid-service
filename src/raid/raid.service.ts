@@ -20,6 +20,7 @@ import { User } from 'src/user/entity/user.entity';
 import { Cache } from 'cache-manager';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import Redis from 'ioredis';
+import { RankDto } from './dto/rank.dto';
 
 const bossUrl = config.get('boss_url');
 
@@ -141,6 +142,33 @@ export class RaidService {
     await this.raidRepository.save(raidRecord);
 
     await this.redis.zincrby('raidRank', parseInt(score['score']), userId);
+  }
+
+  async getRankList(rankDto: RankDto) {
+    const { userId } = rankDto;
+
+    const findUser: User = await this.userService.findUserByfield({
+      where: { id: userId },
+    });
+
+    if (!findUser) {
+      throw new NotFoundException('존재하지 않는 사용자입니다.');
+    }
+
+    const rankList = await this.redis.zrevrange('raidRank', 0, -1);
+    const results = await Promise.all(
+      rankList.map(async (element) => {
+        const score = await this.redis.zscore('raidRank', element);
+        const rank = await this.redis.zrevrank('raidRank', element);
+        const result = {
+          ranking: rank + 1,
+          userId: Number(element),
+          totalScore: Number(score),
+        };
+        return result;
+      }),
+    );
+    return results;
   }
 
   async getBossInfo() {
