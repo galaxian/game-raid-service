@@ -1,6 +1,8 @@
 import {
   BadRequestException,
+  CACHE_MANAGER,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -15,6 +17,10 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom, map } from 'rxjs';
 import { EndRaidDto } from './dto/end.dto';
 import { User } from 'src/user/entity/user.entity';
+import { Cache } from 'cache-manager';
+import { InjectRedis } from '@nestjs-modules/ioredis';
+import Redis from 'ioredis';
+import { RankDto } from './dto/rank.dto';
 
 const bossUrl = config.get('boss_url');
 
@@ -25,6 +31,8 @@ export class RaidService {
     private readonly raidRepository: Repository<RaidRecord>,
     private readonly userService: UserService,
     private readonly httpService: HttpService,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    @InjectRedis() private readonly redis: Redis,
   ) {}
 
   async getRaidStatus() {
@@ -132,6 +140,52 @@ export class RaidService {
     }
 
     await this.raidRepository.save(raidRecord);
+
+    await this.redis.zincrby('raidRank', parseInt(score['score']), userId);
+  }
+
+  async getRankList(rankDto: RankDto) {
+    const { userId } = rankDto;
+
+    const findUser: User = await this.userService.findUserByfield({
+      where: { id: userId },
+    });
+
+    if (!findUser) {
+      throw new NotFoundException('존재하지 않는 사용자입니다.');
+    }
+
+    const rankList = await this.redis.zrevrange('raidRank', 0, -1);
+    const results = await Promise.all(
+      rankList.map(async (element) => {
+        const score = await this.redis.zscore('raidRank', element);
+        const rank = await this.redis.zrevrank('raidRank', element);
+        const result = {
+          ranking: rank + 1,
+          userId: Number(element),
+          totalScore: Number(score),
+        };
+        return result;
+      }),
+    );
+
+    let myRank = 0;
+    let myTotalScore = 0;
+    for (const rank of results) {
+      if (userId === rank.userId) {
+        myRank = rank.ranking;
+        myTotalScore = rank.totalScore;
+        break;
+      }
+    }
+    return {
+      toprankerInfoList: results,
+      myRankingInfo: {
+        ranking: myRank,
+        userId: userId,
+        totalScore: myTotalScore,
+      },
+    };
   }
 
   async getBossInfo() {
