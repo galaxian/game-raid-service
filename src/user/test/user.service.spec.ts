@@ -2,8 +2,8 @@ import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { RaidRecord } from 'src/raid/entity/raid.entity';
-import { User } from './entity/user.entity';
-import { UserService } from './user.service';
+import { User } from '../entity/user.entity';
+import { UserService } from '../user.service';
 
 describe('UserService', () => {
   let userService: UserService;
