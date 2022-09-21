@@ -127,5 +127,25 @@ describe('UserService', () => {
         new NotFoundException('존재하지 않는 사용자 입니다.'),
       );
     });
+    it('레이드 미참여자 정보 조회 성공', async () => {
+      //given
+      mockUserRepository.findOne.mockImplementation(() =>
+        Promise.resolve({
+          raidRecord: [],
+          id: 1,
+          createAt: undefined,
+          updateAt: undefined,
+          deleteAt: undefined,
+        }),
+      );
+
+      //when
+      const id = 1;
+      const result = await userService.getUser(id);
+
+      //then
+      expect(result.bossRaidHistory).toEqual([]);
+      expect(result.totalScore).toEqual(0);
+    });
   });
 });
