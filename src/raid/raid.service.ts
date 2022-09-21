@@ -34,7 +34,9 @@ export class RaidService {
     private readonly httpService: HttpService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     @InjectRedis() private readonly redis: Redis,
-  ) {}
+  ) {
+    this.staticDataCaching();
+  }
 
   async getRaidStatus(): Promise<RaidStatusEnterResponseDto> {
     const getRecord: RaidRecord = await this.raidRepository
@@ -51,6 +53,7 @@ export class RaidService {
     }
 
     const enterInfo = await this.getRaidStatusFromCache();
+    console.log(enterInfo);
 
     if (enterInfo) {
       const enterUserId: number = enterInfo['enterUserId'];
@@ -59,8 +62,9 @@ export class RaidService {
       const enterTime = raidEnterTime.getTime();
       const now = new Date().getTime();
 
-      const duration: number = (await this.getBossInfo()).bossRaids[0]
-        .bossRaidLimitSeconds;
+      const duration: number = await this.cacheManager.get(
+        'bossRaidLimitSeconds',
+      );
       const raidTime = now - enterTime;
 
       if (raidTime < duration * 1000) {
@@ -138,10 +142,12 @@ export class RaidService {
     const now: Date = new Date();
     raidRecord.endTime = now;
 
-    const bossRadiDuration: number = (await this.getBossInfo()).bossRaids[0]
-      .bossRaidLimitSeconds;
-    const bossRaidScore: number = (await this.getBossInfo()).bossRaids[0]
-      .levels[raidRecord.level - 1];
+    const bossRadiDuration: number = await this.cacheManager.get(
+      'bossRaidLimitSeconds',
+    );
+    const bossRaidScore: number = await this.cacheManager.get(
+      'level_' + raidRecord.level,
+    );
 
     const playerRaidTime: number =
       raidRecord.endTime.getTime() - raidRecord.enterTime.getTime();
@@ -152,9 +158,9 @@ export class RaidService {
 
     await this.raidRepository.save(raidRecord);
 
-    await this.updateRanking(bossRaidScore['score'], userId);
+    await this.updateRanking(bossRaidScore, userId);
 
-    await this.dropRaidStatusFromCache();
+    this.dropRaidStatusFromCache();
   }
 
   async getRankList(rankDto: RankDto): Promise<{
@@ -241,5 +247,27 @@ export class RaidService {
     );
 
     return bossRaidData;
+  }
+
+  async staticDataCaching() {
+    const staticData = await firstValueFrom(
+      this.httpService.get(bossUrl).pipe(map((response) => response.data)),
+    );
+    const bossRaid = staticData.bossRaids[0];
+
+    await this.cacheManager.set(
+      'bossRaidLimitSeconds',
+      bossRaid.bossRaidLimitSeconds,
+      { ttl: 0 },
+    );
+    await this.cacheManager.set('level_1', bossRaid.levels[0].score, {
+      ttl: 0,
+    });
+    await this.cacheManager.set('level_2', bossRaid.levels[1].score, {
+      ttl: 0,
+    });
+    await this.cacheManager.set('level_3', bossRaid.levels[2].score, {
+      ttl: 0,
+    });
   }
 }
