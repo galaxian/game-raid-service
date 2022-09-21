@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RaidStatusResponseDto } from 'src/raid/dto/raidStatusRes.dto';
 import { FindOneOptions, Repository } from 'typeorm';
@@ -28,6 +28,10 @@ export class UserService {
       relations: ['raidRecord'],
     });
 
+    if (!findUser) {
+      throw new NotFoundException('존재하지 않는 사용자 입니다.');
+    }
+
     let totalScore = 0;
 
     const bossRaidHistory: RaidStatusResponseDto[] = [];
@@ -50,9 +54,15 @@ export class UserService {
     return data;
   }
 
-  async findUserByfield(
+  async findUserByfieldAndNotFoundValid(
     options: FindOneOptions<User>,
   ): Promise<User | undefined> {
-    return await this.userRepository.findOne(options);
+    const findUser = await this.userRepository.findOne(options);
+
+    if (!findUser) {
+      throw new NotFoundException('존재하지 않는 사용자입니다.');
+    }
+
+    return findUser;
   }
 }
