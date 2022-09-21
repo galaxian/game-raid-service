@@ -7,8 +7,8 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  createUser(): ResponseDto {
-    const data = this.userService.createUser();
+  async createUser(): Promise<ResponseDto> {
+    const data = await this.userService.createUser();
     const response: ResponseDto = {
       status: 201,
       data,
@@ -17,8 +17,8 @@ export class UserController {
   }
 
   @Get('/:id')
-  getUser(@Param('id') id: number): ResponseDto {
-    const data = this.userService.getUser(id);
+  async getUser(@Param('id') id: number): Promise<ResponseDto> {
+    const data = await this.userService.getUser(id);
     const response: ResponseDto = {
       status: 200,
       data,

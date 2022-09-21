@@ -50,19 +50,26 @@ export class RaidService {
       return result;
     }
 
-    const enterTime: number = getRecord.enterTime.getTime();
-    const now = new Date().getTime();
+    const enterInfo = await this.cacheManager.get('enterInfo');
 
-    const duration: number = (await this.getBossInfo()).bossRaids[0]
-      .bossRaidLimitSeconds;
-    const raidTime = now - enterTime;
+    if (enterInfo) {
+      const enterUserId: number = enterInfo['enterUserId'];
+      const raidEnterTime: Date = enterInfo['raidEnterTime'];
 
-    if (raidTime < duration * 1000) {
-      const result: RaidStatusEnterResponseDto = {
-        canEnter: false,
-        enteredUserId: getRecord.user.id,
-      };
-      return result;
+      const enterTime = raidEnterTime.getTime();
+      const now = new Date().getTime();
+
+      const duration: number = (await this.getBossInfo()).bossRaids[0]
+        .bossRaidLimitSeconds;
+      const raidTime = now - enterTime;
+
+      if (raidTime < duration * 1000) {
+        const result: RaidStatusEnterResponseDto = {
+          canEnter: false,
+          enteredUserId: enterUserId,
+        };
+        return result;
+      }
     }
 
     const result: RaidStatusEnterResponseDto = {
@@ -98,6 +105,13 @@ export class RaidService {
     });
 
     const saveRecord: RaidRecord = await this.raidRepository.save(record);
+    const enterTime = saveRecord.enterTime;
+
+    await this.cacheManager.set(
+      'enterInfo',
+      { enterUserId: userId, raidEnterTime: enterTime },
+      { ttl: 180 },
+    );
 
     const data: EnterResponseDto = {
       isEntered: true,
@@ -153,6 +167,8 @@ export class RaidService {
       parseInt(bossRaidScore['score']),
       userId,
     );
+
+    await this.cacheManager.del('entetInfo');
   }
 
   async getRankList(rankDto: RankDto): Promise<{

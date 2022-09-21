@@ -10,8 +10,8 @@ export class RaidController {
   constructor(private readonly raidService: RaidService) {}
 
   @Get()
-  getRaidStatus(): ResponseDto {
-    const data = this.raidService.getRaidStatus();
+  async getRaidStatus(): Promise<ResponseDto> {
+    const data = await this.raidService.getRaidStatus();
     const response: ResponseDto = {
       status: 200,
       data,
@@ -20,8 +20,10 @@ export class RaidController {
   }
 
   @Post('/enter')
-  enterBossRaid(@Body() enterRaidDto: EnterRaidDto): ResponseDto {
-    const data = this.raidService.enterBossRaid(enterRaidDto);
+  async enterBossRaid(
+    @Body() enterRaidDto: EnterRaidDto,
+  ): Promise<ResponseDto> {
+    const data = await this.raidService.enterBossRaid(enterRaidDto);
     const response: ResponseDto = {
       status: 201,
       data,
@@ -30,7 +32,7 @@ export class RaidController {
   }
 
   @Patch('/end')
-  endBossRaid(@Body() endRaidDto: EndRaidDto): ResponseDto {
+  async endBossRaid(@Body() endRaidDto: EndRaidDto): Promise<ResponseDto> {
     this.raidService.endBossRaid(endRaidDto);
     const response: ResponseDto = {
       status: 200,
@@ -39,8 +41,8 @@ export class RaidController {
   }
 
   @Get('top-ranker-list')
-  getRankList(@Body() rankDto: RankDto): ResponseDto {
-    const data = this.raidService.getRankList(rankDto);
+  async getRankList(@Body() rankDto: RankDto): Promise<ResponseDto> {
+    const data = await this.raidService.getRankList(rankDto);
     const response: ResponseDto = {
       status: 200,
       data,
