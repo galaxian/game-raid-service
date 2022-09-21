@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Post,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ResponseDto } from 'src/utils/dto/response.dto';
 import { EndRaidDto } from './dto/end.dto';
 import { EnterRaidDto } from './dto/enter.dto';
@@ -20,6 +28,7 @@ export class RaidController {
   }
 
   @Post('/enter')
+  @UsePipes(ValidationPipe)
   async enterBossRaid(
     @Body() enterRaidDto: EnterRaidDto,
   ): Promise<ResponseDto> {
@@ -32,6 +41,7 @@ export class RaidController {
   }
 
   @Patch('/end')
+  @UsePipes(ValidationPipe)
   async endBossRaid(@Body() endRaidDto: EndRaidDto): Promise<ResponseDto> {
     this.raidService.endBossRaid(endRaidDto);
     const response: ResponseDto = {
@@ -41,6 +51,7 @@ export class RaidController {
   }
 
   @Get('top-ranker-list')
+  @UsePipes(ValidationPipe)
   async getRankList(@Body() rankDto: RankDto): Promise<ResponseDto> {
     const data = await this.raidService.getRankList(rankDto);
     const response: ResponseDto = {

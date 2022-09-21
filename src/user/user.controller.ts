@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ResponseDto } from 'src/utils/dto/response.dto';
 import { UserService } from './user.service';
 
@@ -17,7 +25,8 @@ export class UserController {
   }
 
   @Get('/:id')
-  async getUser(@Param('id') id: number): Promise<ResponseDto> {
+  @UsePipes(ValidationPipe)
+  async getUser(@Param('id', ParseIntPipe) id: number): Promise<ResponseDto> {
     const data = await this.userService.getUser(id);
     const response: ResponseDto = {
       status: 200,
