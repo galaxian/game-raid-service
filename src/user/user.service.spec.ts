@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { RaidRecord } from 'src/raid/entity/raid.entity';
@@ -110,6 +111,21 @@ describe('UserService', () => {
       expect(result.totalScore).toEqual(expectedTotalScore);
       expect(result.bossRaidHistory[0].raidRecordId).toEqual(records[0].id);
       expect(result.bossRaidHistory[0].score).toEqual(records[0].score);
+    });
+    it('존재하지 않는 사용자 정보 조회 실패', async () => {
+      //given
+      mockUserRepository.findOne.mockImplementation(() => null);
+
+      //when
+      const id = 1;
+      const result = async () => {
+        await userService.getUser(id);
+      };
+
+      //then
+      expect(result).rejects.toThrowError(
+        new NotFoundException('존재하지 않는 사용자 입니다.'),
+      );
     });
   });
 });
