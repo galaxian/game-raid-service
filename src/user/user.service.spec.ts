@@ -148,4 +148,23 @@ describe('UserService', () => {
       expect(result.totalScore).toEqual(0);
     });
   });
+
+  describe('findUserByField', () => {
+    it('사용자 조회 후 user 반환.', async () => {
+      //given
+      mockUserRepository.findOne.mockImplementation(() => ({
+        id: 1,
+        createDate: undefined,
+        updateDate: undefined,
+        deleteAt: undefined,
+      }));
+
+      //when
+      const id = 1;
+      const result: User = await userService.findUserByfield({ where: { id } });
+
+      //then
+      expect(result.id).toEqual(id);
+    });
+  });
 });
