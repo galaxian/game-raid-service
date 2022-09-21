@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { RaidStatusResponseDto } from 'src/raid/dto/raidStatusRes.dto';
 import { FindOneOptions, Repository } from 'typeorm';
+import { UserResponseDto } from './dto/userResponse.dto';
 import { User } from './entity/user.entity';
 
 @Injectable()
@@ -9,14 +11,18 @@ export class UserService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
-  async createUser(): Promise<{ userId: number }> {
-    const createUser = this.userRepository.create();
-    const saveUser = await this.userRepository.save(createUser);
+  async createUser(): Promise<{
+    userId: number;
+  }> {
+    const createUser: User = this.userRepository.create();
+    const saveUser: User = await this.userRepository.save(createUser);
 
-    return { userId: saveUser.id };
+    const data = { userId: saveUser.id };
+
+    return data;
   }
 
-  async getUser(id: number) {
+  async getUser(id: number): Promise<UserResponseDto> {
     const findUser: User = await this.userRepository.findOne({
       where: { id },
       relations: ['raidRecord'],
@@ -24,11 +30,11 @@ export class UserService {
 
     let totalScore = 0;
 
-    const response = [];
+    const bossRaidHistory: RaidStatusResponseDto[] = [];
 
     for (const record of findUser.raidRecord) {
       totalScore += record.score;
-      response.push({
+      bossRaidHistory.push({
         raidRecordId: record.id,
         score: record.score,
         enterTime: record.enterTime,
@@ -36,10 +42,12 @@ export class UserService {
       });
     }
 
-    return {
+    const data: UserResponseDto = {
       totalScore,
-      bossRaidHistory: response,
+      bossRaidHistory,
     };
+
+    return data;
   }
 
   async findUserByfield(
