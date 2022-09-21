@@ -8,10 +8,11 @@ import {
   ValidationPipe,
   Version,
 } from '@nestjs/common';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ResponseDto } from 'src/utils/dto/response.dto';
 import { UserService } from './user.service';
 
+@ApiTags('유저 관련 api')
 @Controller({ path: '/users', version: ['1', '2'] })
 export class UserController {
   constructor(private readonly userService: UserService) {}
