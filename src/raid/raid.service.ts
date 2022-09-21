@@ -160,7 +160,7 @@ export class RaidService {
 
     await this.updateRanking(bossRaidScore, userId);
 
-    this.dropRaidStatusFromCache();
+    await this.dropRaidStatusFromCache();
   }
 
   async getRankList(rankDto: RankDto): Promise<{
@@ -210,7 +210,7 @@ export class RaidService {
   }
 
   async dropRaidStatusFromCache() {
-    await this.cacheManager.del('entetInfo');
+    await this.cacheManager.del('enterInfo');
   }
 
   async setRaidStatusToCache(userId: number, enterTime: Date) {
