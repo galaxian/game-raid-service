@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RaidStatusResponseDto } from 'src/raid/dto/raidStatusRes.dto';
 import { FindOneOptions, Repository } from 'typeorm';
@@ -27,6 +27,10 @@ export class UserService {
       where: { id },
       relations: ['raidRecord'],
     });
+
+    if (!findUser) {
+      throw new NotFoundException('존재하지 않는 사용자 입니다.');
+    }
 
     let totalScore = 0;
 
