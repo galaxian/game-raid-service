@@ -161,7 +161,9 @@ describe('UserService', () => {
 
       //when
       const id = 1;
-      const result: User = await userService.findUserByfield({ where: { id } });
+      const result: User = await userService.findUserByfieldAndNotFoundValid({
+        where: { id },
+      });
 
       //then
       expect(result.id).toEqual(id);

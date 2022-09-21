@@ -54,9 +54,15 @@ export class UserService {
     return data;
   }
 
-  async findUserByfield(
+  async findUserByfieldAndNotFoundValid(
     options: FindOneOptions<User>,
   ): Promise<User | undefined> {
-    return await this.userRepository.findOne(options);
+    const findUser = await this.userRepository.findOne(options);
+
+    if (!findUser) {
+      throw new NotFoundException('존재하지 않는 사용자입니다.');
+    }
+
+    return findUser;
   }
 }

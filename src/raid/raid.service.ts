@@ -50,7 +50,7 @@ export class RaidService {
       return result;
     }
 
-    const enterInfo = await this.cacheManager.get('enterInfo');
+    const enterInfo = await this.getRaidStatusFromCache();
 
     if (enterInfo) {
       const enterUserId: number = enterInfo['enterUserId'];
@@ -82,20 +82,17 @@ export class RaidService {
   async enterBossRaid(enterRaidDto: EnterRaidDto): Promise<EnterResponseDto> {
     const { userId, level } = enterRaidDto;
 
-    const findUser: User = await this.userService.findUserByfield({
-      where: {
-        id: userId,
-      },
-    });
-
-    if (!findUser) {
-      throw new NotFoundException('존재하지 않는 사용자입니다.');
-    }
+    const findUser: User =
+      await this.userService.findUserByfieldAndNotFoundValid({
+        where: {
+          id: userId,
+        },
+      });
 
     const canEnter: boolean = (await this.getRaidStatus()).canEnter;
 
     if (!canEnter) {
-      const data: EnterResponseDto = { isEntered: false, raidRecordId: null };
+      const data: EnterResponseDto = { isEntered: false };
       return data;
     }
 
@@ -107,11 +104,7 @@ export class RaidService {
     const saveRecord: RaidRecord = await this.raidRepository.save(record);
     const enterTime = saveRecord.enterTime;
 
-    await this.cacheManager.set(
-      'enterInfo',
-      { enterUserId: userId, raidEnterTime: enterTime },
-      { ttl: 180 },
-    );
+    await this.setRaidStatusToCache(userId, enterTime);
 
     const data: EnterResponseDto = {
       isEntered: true,
@@ -124,13 +117,10 @@ export class RaidService {
   async endBossRaid(endRaidDto: EndRaidDto): Promise<void> {
     const { userId, raidRecordId } = endRaidDto;
 
-    const findUser: User = await this.userService.findUserByfield({
-      where: { id: userId },
-    });
-
-    if (!findUser) {
-      throw new NotFoundException('존재하지 않는 사용자입니다.');
-    }
+    const findUser: User =
+      await this.userService.findUserByfieldAndNotFoundValid({
+        where: { id: userId },
+      });
 
     const raidRecord: RaidRecord = await this.raidRepository.findOne({
       where: { id: raidRecordId },
@@ -162,13 +152,9 @@ export class RaidService {
 
     await this.raidRepository.save(raidRecord);
 
-    await this.redis.zincrby(
-      'raidRank',
-      parseInt(bossRaidScore['score']),
-      userId,
-    );
+    await this.updateRanking(bossRaidScore['score'], userId);
 
-    await this.cacheManager.del('entetInfo');
+    await this.dropRaidStatusFromCache();
   }
 
   async getRankList(rankDto: RankDto): Promise<{
@@ -177,32 +163,17 @@ export class RaidService {
   }> {
     const { userId } = rankDto;
 
-    const findUser: User = await this.userService.findUserByfield({
-      where: { id: userId },
-    });
+    const findUser: User =
+      await this.userService.findUserByfieldAndNotFoundValid({
+        where: { id: userId },
+      });
 
-    if (!findUser) {
-      throw new NotFoundException('존재하지 않는 사용자입니다.');
-    }
-
-    const rankList = await this.redis.zrevrange('raidRank', 0, -1);
-    const results: RaidRankResponseDto[] = await Promise.all(
-      rankList.map(async (element) => {
-        const score = await this.redis.zscore('raidRank', element);
-        const rank = await this.redis.zrevrank('raidRank', element);
-        const result: RaidRankResponseDto = {
-          ranking: rank + 1,
-          userId: Number(element),
-          totalScore: Number(score),
-        };
-        return result;
-      }),
-    );
+    const rankerList = await this.getRankerListFromRedis();
 
     let myRank = 0;
     let myTotalScore = 0;
 
-    for (const rank of results) {
+    for (const rank of rankerList) {
       if (userId === rank.userId) {
         myRank = rank.ranking;
         myTotalScore = rank.totalScore;
@@ -217,11 +188,49 @@ export class RaidService {
     };
 
     const data = {
-      topRankerInfoList: results,
+      topRankerInfoList: rankerList,
       myRankingInfo: myRaidRankData,
     };
 
     return data;
+  }
+
+  async updateRanking(score: number, userId: number) {
+    await this.redis.zincrby('raidRank', score, userId);
+  }
+
+  async getRaidStatusFromCache() {
+    return await this.cacheManager.get('enterInfo');
+  }
+
+  async dropRaidStatusFromCache() {
+    await this.cacheManager.del('entetInfo');
+  }
+
+  async setRaidStatusToCache(userId: number, enterTime: Date) {
+    await this.cacheManager.set(
+      'enterInfo',
+      { enterUserId: userId, raidEnterTime: enterTime },
+      { ttl: 180 },
+    );
+  }
+
+  async getRankerListFromRedis() {
+    const rankList = await this.redis.zrevrange('raidRank', 0, -1);
+
+    const results: RaidRankResponseDto[] = await Promise.all(
+      rankList.map(async (element) => {
+        const score = await this.redis.zscore('raidRank', element);
+        const rank = await this.redis.zrevrank('raidRank', element);
+        const result: RaidRankResponseDto = {
+          ranking: rank + 1,
+          userId: Number(element),
+          totalScore: Number(score),
+        };
+        return result;
+      }),
+    );
+    return results;
   }
 
   async getBossInfo() {
