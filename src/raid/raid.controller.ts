@@ -25,6 +25,7 @@ export class RaidController {
     description: '보스 레이드를 진행중인 사용자가 있는지 확인한다.',
   })
   @Get()
+  @Version('1')
   async getRaidStatus(): Promise<ResponseDto> {
     const data = await this.raidService.getRaidStatus();
     const response: ResponseDto = {
