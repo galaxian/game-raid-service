@@ -53,7 +53,6 @@ export class RaidService {
     }
 
     const enterInfo = await this.getRaidStatusFromCache();
-    console.log(enterInfo);
 
     if (enterInfo) {
       const enterUserId: number = enterInfo['enterUserId'];
@@ -121,10 +120,9 @@ export class RaidService {
   async endBossRaid(endRaidDto: EndRaidDto): Promise<void> {
     const { userId, raidRecordId } = endRaidDto;
 
-    const findUser: User =
-      await this.userService.findUserByfieldAndNotFoundValid({
-        where: { id: userId },
-      });
+    await this.userService.findUserByfieldAndNotFoundValid({
+      where: { id: userId },
+    });
 
     const raidRecord: RaidRecord = await this.raidRepository.findOne({
       where: { id: raidRecordId },
@@ -169,10 +167,9 @@ export class RaidService {
   }> {
     const { userId } = rankDto;
 
-    const findUser: User =
-      await this.userService.findUserByfieldAndNotFoundValid({
-        where: { id: userId },
-      });
+    await this.userService.findUserByfieldAndNotFoundValid({
+      where: { id: userId },
+    });
 
     const rankerList = await this.getRankerListFromRedis();
 
