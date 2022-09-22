@@ -242,16 +242,6 @@ export class RaidService {
     return results;
   }
 
-  async getBossInfo() {
-    const url: string = bossUrl;
-
-    const bossRaidData = await firstValueFrom(
-      this.httpService.get(url).pipe(map((response) => response.data)),
-    );
-
-    return bossRaidData;
-  }
-
   async staticDataCaching() {
     const staticData = await firstValueFrom(
       this.httpService.get(bossUrl).pipe(map((response) => response.data)),
