@@ -6,6 +6,7 @@ import {
   Post,
   UsePipes,
   ValidationPipe,
+  Version,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ResponseDto } from 'src/utils/dto/response.dto';
@@ -24,6 +25,7 @@ export class RaidController {
     description: '보스 레이드를 진행중인 사용자가 있는지 확인한다.',
   })
   @Get()
+  @Version('1')
   async getRaidStatus(): Promise<ResponseDto> {
     const data = await this.raidService.getRaidStatus();
     const response: ResponseDto = {
@@ -39,6 +41,7 @@ export class RaidController {
       '보스 레이드 상태를 확인하고 입장 가능하면 입장, 불가능하면 입장이 불가능하도록 한다.',
   })
   @Post('/enter')
+  @Version('1')
   @UsePipes(ValidationPipe)
   async enterBossRaid(
     @Body() enterRaidDto: EnterRaidDto,
@@ -57,6 +60,7 @@ export class RaidController {
       '보스 레이드를 진행중인 사용자가 레이드 종료시 종료할 수 있도록 한다.',
   })
   @Patch('/end')
+  @Version('1')
   @UsePipes(ValidationPipe)
   async endBossRaid(@Body() endRaidDto: EndRaidDto): Promise<ResponseDto> {
     this.raidService.endBossRaid(endRaidDto);
@@ -72,6 +76,7 @@ export class RaidController {
       '보스 레이드 랭킹 리스트 및 본인의 랭킹 정보를 확인할 수 있다.',
   })
   @Get('top-ranker-list')
+  @Version('1')
   @UsePipes(ValidationPipe)
   async getRankList(@Body() rankDto: RankDto): Promise<ResponseDto> {
     const data = await this.raidService.getRankList(rankDto);

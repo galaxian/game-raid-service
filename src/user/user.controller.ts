@@ -6,11 +6,13 @@ import {
   Post,
   UsePipes,
   ValidationPipe,
+  Version,
 } from '@nestjs/common';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ResponseDto } from 'src/utils/dto/response.dto';
 import { UserService } from './user.service';
 
+@ApiTags('유저 관련 api')
 @Controller({ path: '/users', version: ['1', '2'] })
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -20,6 +22,7 @@ export class UserController {
     description: '중복되지 않는 유저 아이디를 생성한다.',
   })
   @Post()
+  @Version('1')
   async createUser(): Promise<ResponseDto> {
     const data = await this.userService.createUser();
     const response: ResponseDto = {
@@ -35,6 +38,7 @@ export class UserController {
       '유저 pk를 통해 유저의 레이드 총점과 레이드 기록들을 조회한다.',
   })
   @Get('/:id')
+  @Version('1')
   @UsePipes(ValidationPipe)
   async getUser(@Param('id', ParseIntPipe) id: number): Promise<ResponseDto> {
     const data = await this.userService.getUser(id);

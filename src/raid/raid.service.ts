@@ -34,7 +34,9 @@ export class RaidService {
     private readonly httpService: HttpService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     @InjectRedis() private readonly redis: Redis,
-  ) {}
+  ) {
+    this.staticDataCaching();
+  }
 
   async getRaidStatus(): Promise<RaidStatusEnterResponseDto> {
     const getRecord: RaidRecord = await this.raidRepository
@@ -59,8 +61,9 @@ export class RaidService {
       const enterTime = raidEnterTime.getTime();
       const now = new Date().getTime();
 
-      const duration: number = (await this.getBossInfo()).bossRaids[0]
-        .bossRaidLimitSeconds;
+      const duration: number = await this.cacheManager.get(
+        'bossRaidLimitSeconds',
+      );
       const raidTime = now - enterTime;
 
       if (raidTime < duration * 1000) {
@@ -117,10 +120,9 @@ export class RaidService {
   async endBossRaid(endRaidDto: EndRaidDto): Promise<void> {
     const { userId, raidRecordId } = endRaidDto;
 
-    const findUser: User =
-      await this.userService.findUserByfieldAndNotFoundValid({
-        where: { id: userId },
-      });
+    await this.userService.findUserByfieldAndNotFoundValid({
+      where: { id: userId },
+    });
 
     const raidRecord: RaidRecord = await this.raidRepository.findOne({
       where: { id: raidRecordId },
@@ -138,10 +140,12 @@ export class RaidService {
     const now: Date = new Date();
     raidRecord.endTime = now;
 
-    const bossRadiDuration: number = (await this.getBossInfo()).bossRaids[0]
-      .bossRaidLimitSeconds;
-    const bossRaidScore: number = (await this.getBossInfo()).bossRaids[0]
-      .levels[raidRecord.level - 1];
+    const bossRadiDuration: number = await this.cacheManager.get(
+      'bossRaidLimitSeconds',
+    );
+    const bossRaidScore: number = await this.cacheManager.get(
+      'level_' + raidRecord.level,
+    );
 
     const playerRaidTime: number =
       raidRecord.endTime.getTime() - raidRecord.enterTime.getTime();
@@ -152,7 +156,7 @@ export class RaidService {
 
     await this.raidRepository.save(raidRecord);
 
-    await this.updateRanking(bossRaidScore['score'], userId);
+    await this.updateRanking(bossRaidScore, userId);
 
     await this.dropRaidStatusFromCache();
   }
@@ -163,10 +167,9 @@ export class RaidService {
   }> {
     const { userId } = rankDto;
 
-    const findUser: User =
-      await this.userService.findUserByfieldAndNotFoundValid({
-        where: { id: userId },
-      });
+    await this.userService.findUserByfieldAndNotFoundValid({
+      where: { id: userId },
+    });
 
     const rankerList = await this.getRankerListFromRedis();
 
@@ -204,7 +207,7 @@ export class RaidService {
   }
 
   async dropRaidStatusFromCache() {
-    await this.cacheManager.del('entetInfo');
+    await this.cacheManager.del('enterInfo');
   }
 
   async setRaidStatusToCache(userId: number, enterTime: Date) {
@@ -221,7 +224,13 @@ export class RaidService {
     const results: RaidRankResponseDto[] = await Promise.all(
       rankList.map(async (element) => {
         const score = await this.redis.zscore('raidRank', element);
-        const rank = await this.redis.zrevrank('raidRank', element);
+        const sameScoreList = await this.redis.zrevrangebyscore(
+          'Raid-Rank',
+          score,
+          score,
+        );
+        const rankIdx = sameScoreList[0];
+        const rank = await this.redis.zrevrank('raidRank', rankIdx);
         const result: RaidRankResponseDto = {
           ranking: rank + 1,
           userId: Number(element),
@@ -233,13 +242,25 @@ export class RaidService {
     return results;
   }
 
-  async getBossInfo() {
-    const url: string = bossUrl;
-
-    const bossRaidData = await firstValueFrom(
-      this.httpService.get(url).pipe(map((response) => response.data)),
+  async staticDataCaching() {
+    const staticData = await firstValueFrom(
+      this.httpService.get(bossUrl).pipe(map((response) => response.data)),
     );
+    const bossRaid = staticData.bossRaids[0];
 
-    return bossRaidData;
+    await this.cacheManager.set(
+      'bossRaidLimitSeconds',
+      bossRaid.bossRaidLimitSeconds,
+      { ttl: 0 },
+    );
+    await this.cacheManager.set('level_1', bossRaid.levels[0].score, {
+      ttl: 0,
+    });
+    await this.cacheManager.set('level_2', bossRaid.levels[1].score, {
+      ttl: 0,
+    });
+    await this.cacheManager.set('level_3', bossRaid.levels[2].score, {
+      ttl: 0,
+    });
   }
 }

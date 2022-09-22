@@ -3,10 +3,9 @@ import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { User } from 'src/user/entity/user.entity';
 import { UserService } from 'src/user/user.service';
-import { RaidRecord } from './entity/raid.entity';
-import { RaidService } from './raid.service';
+import { RaidRecord } from '../entity/raid.entity';
+import { RaidService } from '../raid.service';
 
 describe('RaidService', () => {
   let raidService: RaidService;
