@@ -224,7 +224,13 @@ export class RaidService {
     const results: RaidRankResponseDto[] = await Promise.all(
       rankList.map(async (element) => {
         const score = await this.redis.zscore('raidRank', element);
-        const rank = await this.redis.zrevrank('raidRank', element);
+        const sameScoreList = await this.redis.zrevrangebyscore(
+          'Raid-Rank',
+          score,
+          score,
+        );
+        const rankIdx = sameScoreList[0];
+        const rank = await this.redis.zrevrank('raidRank', rankIdx);
         const result: RaidRankResponseDto = {
           ranking: rank + 1,
           userId: Number(element),
