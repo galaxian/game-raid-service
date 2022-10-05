@@ -225,7 +225,7 @@ export class RaidService {
       rankList.map(async (element) => {
         const score = await this.redis.zscore('raidRank', element);
         const sameScoreList = await this.redis.zrevrangebyscore(
-          'Raid-Rank',
+          'raidRank',
           score,
           score,
         );
