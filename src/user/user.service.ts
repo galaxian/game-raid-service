@@ -41,8 +41,14 @@ export class UserService {
       bossRaidHistory.push({
         raidRecordId: record.id,
         score: record.score,
-        enterTime: record.enterTime,
-        endTime: record.endTime,
+        enterTime:
+          record.enterTime.toISOString().substring(0, 10) +
+          ' ' +
+          record.enterTime.toISOString().substring(11, 19),
+        endTime:
+          record.endTime.toISOString().substring(0, 10) +
+          ' ' +
+          record.endTime.toISOString().substring(11, 19),
       });
     }
 

@@ -18,7 +18,7 @@
 
 - 기간 : 2022.09.16 ~ 2022.09.21
 - 개발 언어 : Javascript
-- 개발 라이브러리 : NestJs
+- 개발 프레임워크 : NestJs
 - DB : MySQL
 
 </br>
@@ -76,12 +76,52 @@ swagger
 
 ## ERD✨
 
-![](https://velog.velcdn.com/images/jhlee123/post/1114b7a2-d826-4dff-ab4d-e24009d1f4cc/image.png)
+<details>
+<summary>레이드 입장 가능</summary>
+<img width="800" alt="image" src="https://velog.velcdn.com/images/jhlee123/post/1114b7a2-d826-4dff-ab4d-e24009d1f4cc/image.png">
+</details>
+
 </br>
 
 ## API 명세✨
 
 [API 명세](https://www.notion.so/d808ad1c36c34f92926088753e8a9021?v=f2b4b021cfe5436b9023778315c11c9c)
+
+<details>
+<summary>유저 생성</summary>
+<img width="300" alt="image" src="https://velog.velcdn.com/images/jhlee123/post/96e97839-39e1-4b76-850a-db2e1a7213db/image.png">
+</details>
+
+<details>
+<summary>유저 레이드 정보 조회</summary>
+<img width="300" alt="image" src="https://velog.velcdn.com/images/jhlee123/post/4f892212-7f2d-4a22-a5cf-cb40c149762e/image.png">
+</details>
+
+<details>
+<summary>레이드 입장 가능</summary>
+<img width="300" alt="image" src="https://velog.velcdn.com/images/jhlee123/post/fb2fa266-9923-42d5-9956-12ff3f97ba7e/image.png">
+</details>
+
+<details>
+<summary>레이드 입장 불가</summary>
+<img width="300" alt="image" src="https://velog.velcdn.com/images/jhlee123/post/d465e63d-9b42-4e8e-aac6-0c6a157f1d5b/image.png">
+</details>
+
+<details>
+<summary>레이드 입장</summary>
+<img width="300" alt="image" src="https://s3-us-west-2.amazonaws.com/secure.notion-static.com/1cfc4df1-9bce-46b2-b8ad-10cb55d5522e/%EB%B3%B4%EC%8A%A4%EB%A0%88%EC%9D%B4%EB%93%9C_%EC%9E%85%EC%9E%A5.png">
+</details>
+
+<details>
+<summary>레이드 종료</summary>
+<img width="300" alt="image" src="https://velog.velcdn.com/images/jhlee123/post/2f1f3ce3-72dc-46e8-9bdd-dcb75d99c508/image.png">
+</details>
+    
+<details>
+<summary>레이드 랭킹 조회</summary>
+<img width="300" alt="image" src="https://velog.velcdn.com/images/jhlee123/post/6175017b-134b-4609-b25e-080c031d84d3/image.png">
+</details>
+
 </br></br>
 
 ## 요구사항 분석🌟
@@ -118,9 +158,12 @@ swagger
 
 ## 테스트 코드
 
-userService 단위 테스트
+<details>
+<summary>userService 단위 테스트</summary>
+<img width="400" alt="image" src="https://velog.velcdn.com/images/jhlee123/post/66029236-e72a-4aac-b7fe-63b16070949a/image.png">
+</details>
 
-- ![](https://velog.velcdn.com/images/jhlee123/post/66029236-e72a-4aac-b7fe-63b16070949a/image.png)
+</br></br>
 
 ## 트러블 슈팅🚀
 
@@ -156,7 +199,7 @@ userService 단위 테스트
   ```javascript
   const score = await this.redis.zscore('raidRank', element);
   const sameScoreList = await this.redis.zrevrangebyscore(
-    'Raid-Rank',
+    'raidRank',
     score,
     score,
   );
