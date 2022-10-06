@@ -77,8 +77,8 @@ swagger
 ## ERD✨
 
 <details>
-<summary>레이드 입장 가능</summary>
-<img width="800" alt="image" src="https://velog.velcdn.com/images/jhlee123/post/1114b7a2-d826-4dff-ab4d-e24009d1f4cc/image.png">
+<summary>ERD</summary>
+<img width="600" alt="image" src="https://velog.velcdn.com/images/jhlee123/post/1114b7a2-d826-4dff-ab4d-e24009d1f4cc/image.png">
 </details>
 
 </br>
@@ -89,37 +89,37 @@ swagger
 
 <details>
 <summary>유저 생성</summary>
-<img width="300" alt="image" src="https://velog.velcdn.com/images/jhlee123/post/96e97839-39e1-4b76-850a-db2e1a7213db/image.png">
+<img width="800" alt="image" src="https://velog.velcdn.com/images/jhlee123/post/96e97839-39e1-4b76-850a-db2e1a7213db/image.png">
 </details>
 
 <details>
 <summary>유저 레이드 정보 조회</summary>
-<img width="300" alt="image" src="https://velog.velcdn.com/images/jhlee123/post/4f892212-7f2d-4a22-a5cf-cb40c149762e/image.png">
+<img width="800" alt="image" src="https://velog.velcdn.com/images/jhlee123/post/4f892212-7f2d-4a22-a5cf-cb40c149762e/image.png">
 </details>
 
 <details>
 <summary>레이드 입장 가능</summary>
-<img width="300" alt="image" src="https://velog.velcdn.com/images/jhlee123/post/fb2fa266-9923-42d5-9956-12ff3f97ba7e/image.png">
+<img width="800" alt="image" src="https://velog.velcdn.com/images/jhlee123/post/fb2fa266-9923-42d5-9956-12ff3f97ba7e/image.png">
 </details>
 
 <details>
 <summary>레이드 입장 불가</summary>
-<img width="300" alt="image" src="https://velog.velcdn.com/images/jhlee123/post/d465e63d-9b42-4e8e-aac6-0c6a157f1d5b/image.png">
+<img width="800" alt="image" src="https://velog.velcdn.com/images/jhlee123/post/a3a3c102-d186-4532-a29a-8deed4e86102/image.png">
 </details>
 
 <details>
 <summary>레이드 입장</summary>
-<img width="300" alt="image" src="https://s3-us-west-2.amazonaws.com/secure.notion-static.com/1cfc4df1-9bce-46b2-b8ad-10cb55d5522e/%EB%B3%B4%EC%8A%A4%EB%A0%88%EC%9D%B4%EB%93%9C_%EC%9E%85%EC%9E%A5.png">
+<img width="800" alt="image" src="https://velog.velcdn.com/images/jhlee123/post/925be148-eb9d-4f2b-8b0c-c9d68682ea87/image.png">
 </details>
 
 <details>
 <summary>레이드 종료</summary>
-<img width="300" alt="image" src="https://velog.velcdn.com/images/jhlee123/post/2f1f3ce3-72dc-46e8-9bdd-dcb75d99c508/image.png">
+<img width="800" alt="image" src="https://velog.velcdn.com/images/jhlee123/post/2f1f3ce3-72dc-46e8-9bdd-dcb75d99c508/image.png">
 </details>
     
 <details>
 <summary>레이드 랭킹 조회</summary>
-<img width="300" alt="image" src="https://velog.velcdn.com/images/jhlee123/post/6175017b-134b-4609-b25e-080c031d84d3/image.png">
+<img width="800" alt="image" src="https://velog.velcdn.com/images/jhlee123/post/6175017b-134b-4609-b25e-080c031d84d3/image.png">
 </details>
 
 </br></br>
