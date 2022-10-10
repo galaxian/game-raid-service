@@ -1,4 +1,17 @@
-#
+## 목차
+
+1. [프로젝트 설명](#프로젝트-설명⚡️)
+2. [프로젝트 요약](#프로젝트-요약🌈)
+3. [프로젝트 설정](#프로젝트-설정)
+4. [ERD](#ERD✨)
+5. [API](#API✨)
+6. [요구사항 분석](#요구사항-분석🌟)
+7. [테스트 코드](#테스트-코드)
+8. [조회 속도 개선](#조회-속도-개선)
+9. [트러블 슈팅](#트러블-슈팅🚀)
+10. [사용한 라이브러리](#사용한-라이브러리)
+
+</br>
 
 ## 프로젝트 설명⚡️
 
@@ -83,7 +96,7 @@ swagger
 
 </br>
 
-## API 명세✨
+## API✨
 
 [API 명세](https://www.notion.so/d808ad1c36c34f92926088753e8a9021?v=f2b4b021cfe5436b9023778315c11c9c)
 
@@ -165,6 +178,67 @@ swagger
 
 </br></br>
 
+## 조회 속도 개선
+
+### 테스트 방식
+
+console.time()을 랭킹 조회 로직에 사용하여 redis와 mysql 각각 10회 평균을 구하였다.
+
+```typescript
+console.time('test');
+
+const rankerList = await this.getRankerListFromRedis();
+
+// const rankerList = await this.getRankerListFromRDB()
+
+console.timeEnd('test');
+```
+
+</br>
+
+### 평균 응답 시간
+
+| 조회 데이터 수 | RDB     | Redis   | 시간차  | 감소율 |
+| -------------- | ------- | ------- | ------- | ------ |
+| 1              | 1.257ms | 0.898ms | 0.359ms | 28.6%  |
+| 5              | 1.307ms | 1.080ms | 0.227ms | 17.4%  |
+| 10             | 1.709ms | 1.149ms | 0.56ms  | 32.8%  |
+| 25             | 2.184ms | 2.209ms | 0.713ms | 32.6%  |
+| 50             | 3.442ms | 2.887ms | 0.555ms | 16.1%  |
+
+</br>
+
+### 분석
+
+1. 테스트 진행 시 조회 할 랭커 수에 따라 조회 성능이 증가할 것이라 생각하고 시행
+   - 인원 수가 증가할 수록 효율이 감소하는 현상 발생
+
+</br>
+
+2. 예상 결과와 달라 redis의 조회 메서드과 typeorm의 조회 메서드에 각각 속도 테스트 시행
+
+   ```typescript
+   //mysql 랭킹 조회
+   console.time('rdb');
+   const userList: User[] = await this.userService.findAllUser();
+   console.timeEnd('rdb');
+
+   //redis 랭킹 조회
+   console.time('redis');
+   const rankList = await this.redis.zrevrange('raidRank', 0, -1);
+   console.timeEnd('redis');
+   ```
+
+   - 조회 데이터 50개 기준으로 redis 평균 0.2ms, mysql 평균 3ms 확인
+
+</br>
+
+3. 결론
+   - 랭킹을 조회할 경우 redis는 조회를 여러번 시행하는데 mysql은 한번에 가져오도록 하기 때문이라 생각
+   - redis 조회 로직의 이해가 부족하여 비효율적인 코드일 가능성
+
+</br>
+
 ## 트러블 슈팅🚀
 
 ### 1. 테스트 코드 작성 시 의존성 분리 문제
@@ -208,7 +282,7 @@ swagger
   ```
     </br>
 
-## 사용한 라이브러리(패키지)
+## 사용한 라이브러리
 
 | 라이브러리명    | 내용                  | 참고                           |
 | :-------------- | :-------------------- | :----------------------------- |
